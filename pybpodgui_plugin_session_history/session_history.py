@@ -53,7 +53,7 @@ class SessionHistory(BaseWidget):
 		self._history_index = 0
 		self._log.readonly = True
 		self._log.horizontal_headers = ['#', 'Type', 'Name', 'Channel Id', 'Start', 'End', 'PC timestamp']
-		self._log.tableWidget.setSortingEnabled(True)
+		self._log.set_sorting_enabled(True)
 
 		self._progress.hide()
 
@@ -93,15 +93,15 @@ class SessionHistory(BaseWidget):
 				table_line = None
 				if issubclass(type(message), StateChange):
 					table_line = (self._history_index, message.MESSAGE_TYPE_ALIAS, message.event_name,
-					              '', message.board_timestamp, message.board_timestamp, message.pc_timestamp)
+					              '-', message.board_timestamp, message.board_timestamp, str(message.pc_timestamp))
 
 				if issubclass(type(message), StateEntry):
 					table_line = (self._history_index, message.MESSAGE_TYPE_ALIAS, message.state_name,
-					              '', message.start_timestamp, message.end_timestamp, message.pc_timestamp)
+					              '-', message.start_timestamp, message.end_timestamp, str(message.pc_timestamp))
 
 				if issubclass(type(message), EventOccurrence):
 					table_line = (self._history_index, message.MESSAGE_TYPE_ALIAS, message.event_name,
-					              message.event_id, '', '', message.pc_timestamp)
+					              message.event_id, '-', '-', str(message.pc_timestamp))
 
 				if table_line:
 					self._log += table_line
