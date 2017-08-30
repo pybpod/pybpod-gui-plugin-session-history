@@ -11,9 +11,10 @@ from pysettings import conf
 
 if conf.PYFORMS_USE_QT5:
 	from PyQt5.QtWidgets import QMessageBox
+	from PyQt5.QtGui import QColor
 	from PyQt5.QtCore import QTimer, QEventLoop
 else:
-	from PyQt4.QtGui import QMessageBox
+	from PyQt4.QtGui import QMessageBox, QColor
 	from PyQt4.QtCore import QTimer, QEventLoop
 
 from pysettings import conf
@@ -22,13 +23,26 @@ from pyforms import BaseWidget
 from pyforms.Controls import ControlProgress
 from pyforms.Controls import ControlList
 
-from pyforms_generic_editor.com.messaging.history_message import HistoryMessage
-from pyforms_generic_editor.com.messaging.board_message import BoardMessage
-from pybpodgui_plugin.com.messaging import ErrorMessage
-from pybpodgui_plugin.com.messaging import PrintStatement
-from pybpodgui_plugin.com.messaging import StateChange
-from pybpodgui_plugin.com.messaging import StateEntry
-from pybpodgui_plugin.com.messaging import EventOccurrence
+
+#######################################################################
+##### MESSAGES TYPES ##################################################
+#######################################################################
+from pybranch.com.messaging.error 	import ErrorMessage
+from pybranch.com.messaging.debug 	import DebugMessage
+from pybranch.com.messaging.stderr 	import StderrMessage
+from pybranch.com.messaging.stdout 	import StdoutMessage
+from pybranch.com.messaging.warning import WarningMessage
+from pybranch.com.messaging.parser  import MessageParser
+
+from pybpodapi.bpod.com.messaging.trial					import Trial
+from pybpodapi.bpod.com.messaging.event_occurrence 		import EventOccurrence
+from pybpodapi.bpod.com.messaging.state_occurrence 		import StateOccurrence
+from pybpodapi.bpod.com.messaging.softcode_occurrence 	import SoftcodeOccurrence
+#######################################################################
+#######################################################################
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +68,8 @@ class SessionHistory(BaseWidget):
 		self._log.readonly = True
 		self._log.horizontal_headers = ['#', 'Type', 'Name', 'Channel Id', 'Start', 'End', 'PC timestamp']
 		self._log.set_sorting_enabled(True)
+
+		self._colors = {}
 
 		self._progress.hide()
 
@@ -88,23 +104,68 @@ class SessionHistory(BaseWidget):
 			self._progress.show()
 			self._progress.value = 0
 		try:
-			for message in recent_history:
+			for msg in recent_history:
+				row = None
 
-				table_line = None
-				if issubclass(type(message), StateChange):
-					table_line = (self._history_index, message.MESSAGE_TYPE_ALIAS, message.event_name,
-					              '-', message.board_timestamp, message.board_timestamp, str(message.pc_timestamp))
 
-				if issubclass(type(message), StateEntry):
-					table_line = (self._history_index, message.MESSAGE_TYPE_ALIAS, message.state_name,
-					              '-', message.start_timestamp, message.end_timestamp, str(message.pc_timestamp))
+				if issubclass( type(msg), StderrMessage):
+					row = [
+						self._history_index, 
+						msg.MESSAGE_TYPE_ALIAS, 
+						msg.content + ' | ' + msg.traceback,
+						'-',
+						str(msg.host_timestamp) if msg.host_timestamp else '-',
+						'-', 
+						str(msg.pc_timestamp)
+					]
 
-				if issubclass(type(message), EventOccurrence):
-					table_line = (self._history_index, message.MESSAGE_TYPE_ALIAS, message.event_name,
-					              message.event_id, '-', '-', str(message.pc_timestamp))
+				elif issubclass(type(msg), StateOccurrence):
+					row = [
+						self._history_index, 
+						msg.MESSAGE_TYPE_ALIAS, 
+						msg.content,
+						'-',
+						str(msg.start_timestamp),
+						str(msg.end_timestamp), 
+						str(msg.pc_timestamp)
+					]
 
-				if table_line:
-					self._log += table_line
+				elif issubclass(type(msg), EventOccurrence):
+					row = [
+						self._history_index, 
+						msg.MESSAGE_TYPE_ALIAS, 
+						msg.event_name,
+						msg.event_id,
+						str(msg.host_timestamp) if msg.host_timestamp is not None else '-',
+						'-', 
+						str(msg.pc_timestamp)
+					]
+				else:
+					row = [
+						self._history_index, 
+						msg.MESSAGE_TYPE_ALIAS, 
+						msg.content,
+						'-',
+						str(msg.host_timestamp) if msg.host_timestamp else '-',
+						'-', 
+						str(msg.pc_timestamp)
+					]
+
+
+				if row:
+					self._log += row
+
+					
+					if msg.MESSAGE_COLOR:
+
+						if msg.MESSAGE_COLOR not in self._colors:
+							color = self._colors[msg.MESSAGE_COLOR] = QColor(*msg.MESSAGE_COLOR)
+						else:
+							color = self._colors[msg.MESSAGE_COLOR]
+
+						for i in range(len(row)):
+							self._log.get_cell(i, len(self._log)-1 ).setForeground(color)
+					
 					QEventLoop()
 
 					if update_gui:
@@ -113,12 +174,13 @@ class SessionHistory(BaseWidget):
 
 				self._history_index += 1
 
+			
 		except Exception as err:
 			if hasattr(self, '_timer'):
 				self._timer.stop()
 			logger.error(str(err), exc_info=True)
 			QMessageBox.critical(self, "Error",
-			                     "Unexpected error while loading session history. Pleas see log for more details.")
+								 "Unexpected error while loading session history. Pleas see log for more details.")
 
 		if update_gui:
 			self._progress.hide()
