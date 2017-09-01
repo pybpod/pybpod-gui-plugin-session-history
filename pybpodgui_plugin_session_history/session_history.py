@@ -38,6 +38,7 @@ from pybpodapi.bpod.com.messaging.trial					import Trial
 from pybpodapi.bpod.com.messaging.event_occurrence 		import EventOccurrence
 from pybpodapi.bpod.com.messaging.state_occurrence 		import StateOccurrence
 from pybpodapi.bpod.com.messaging.softcode_occurrence 	import SoftcodeOccurrence
+from pybpodapi.bpod.com.messaging.event_resume 			import EventResume
 #######################################################################
 #######################################################################
 
@@ -130,7 +131,7 @@ class SessionHistory(BaseWidget):
 						str(msg.pc_timestamp)
 					]
 
-				elif issubclass(type(msg), EventOccurrence):
+				elif issubclass(type(msg), (EventOccurrence, EventResume)):
 					row = [
 						self._history_index, 
 						msg.MESSAGE_TYPE_ALIAS, 
