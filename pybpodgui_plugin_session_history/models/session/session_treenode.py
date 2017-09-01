@@ -57,6 +57,7 @@ class SessionTreeNode(object):
 
 	def open_session_history_plugin_detached(self):
 		self.open_session_history_plugin(True)
+	
 
 	def remove(self):
 		if hasattr(self, 'session_history_plugin'): self.mainwindow.mdi_area -= self.session_history_plugin

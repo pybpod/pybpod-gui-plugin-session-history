@@ -73,6 +73,7 @@ class SessionHistory(BaseWidget):
 
 		self._progress.hide()
 
+
 		self._timer = QTimer()
 		self._timer.timeout.connect(self.read_message_queue)
 
@@ -89,15 +90,17 @@ class SessionHistory(BaseWidget):
 		else:
 			BaseWidget.show(self)
 			
+		self._stop  = False # flag used to close the gui in the middle of a loading
 		self.read_message_queue(True)
-		self._timer.start(conf.SESSIONLOG_PLUGIN_REFRESH_RATE)
+		if not self._stop: self._timer.start(conf.SESSIONLOG_PLUGIN_REFRESH_RATE)
 
 	def hide(self):
 		self._timer.stop()
-
-	def beforeClose(self):
+		self._stop = True
+		
+	def before_close_event(self):		
 		self._timer.stop()
-		return False
+		self._stop = True
 
 	def read_message_queue(self, update_gui=False):
 		""" Update board queue and retrieve most recent messages """
@@ -107,8 +110,11 @@ class SessionHistory(BaseWidget):
 		if update_gui:
 			self._progress.show()
 			self._progress.value = 0
+			self._progress.max = len(recent_history)
 		try:
+
 			for msg in recent_history:
+				if self._stop: return
 				row = None
 
 
@@ -170,12 +176,14 @@ class SessionHistory(BaseWidget):
 						for i in range(len(row)):
 							self._log.get_cell(i, len(self._log)-1 ).setForeground(color)
 					
-					QEventLoop()
+					
 
 					if update_gui:
 						self._progress += 1
-						if self._progress.value >= 99: self._progress.value = 0
+						#if self._progress.value >= 99: self._progress.value = 0
 
+
+				QEventLoop()
 				self._history_index += 1
 
 			
