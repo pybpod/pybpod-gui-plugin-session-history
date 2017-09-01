@@ -55,19 +55,18 @@ class SessionHistory(BaseWidget):
 		BaseWidget.__init__(self, session.name)
 		self.layout().setContentsMargins(5, 5, 5, 5)
 
-		self.session = session
-
-		self._log = ControlList()
-		self._progress = ControlProgress('Loading', 0, 1, 100)
+		self._log 		= ControlList()
+		self._progress 	= ControlProgress('Loading', 0, 1, 100)
 
 		self._formset = [
 			'_log',
 			'_progress'
 		]
 
-		self._history_index = 0
-		self._log.readonly = True
-		self._log.horizontal_headers = ['#', 'Type', 'Name', 'Channel Id', 'Start', 'End', 'PC timestamp']
+		self.session 					= session
+		self._history_index 			= 0
+		self._log.readonly 				= True
+		self._log.horizontal_headers 	= ['#', 'Type', 'Name', 'Channel Id', 'Start', 'End', 'PC timestamp']
 		self._log.set_sorting_enabled(True)
 
 		self._colors = {}
@@ -77,15 +76,19 @@ class SessionHistory(BaseWidget):
 		self._timer = QTimer()
 		self._timer.timeout.connect(self.read_message_queue)
 
-	def show(self):
+	
+	def show(self, detached=False):
 		# Prevent the call to be recursive because of the mdi_area
-		if hasattr(self, '_show_called'):
+		if not detached:
+			if hasattr(self, '_show_called'):
+				BaseWidget.show(self)
+				return
+			self._show_called = True
+			self.mainwindow.mdi_area += self
+			del self._show_called
+		else:
 			BaseWidget.show(self)
-			return
-		self._show_called = True
-		self.mainwindow.mdi_area += self
-		del self._show_called
-
+			
 		self.read_message_queue(True)
 		self._timer.start(conf.SESSIONLOG_PLUGIN_REFRESH_RATE)
 

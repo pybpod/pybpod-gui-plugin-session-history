@@ -24,8 +24,19 @@ class SessionTreeNode(object):
 		"""
 		node = super(SessionTreeNode, self).create_treenode(tree)
 
-		tree.add_popup_menu_option('History', self.open_session_history_plugin, item=self.node,
-		                           icon=QIcon(conf.SESSIONLOG_PLUGIN_ICON))
+		tree.add_popup_menu_option(
+			'History', 
+			self.open_session_history_plugin,
+			item=self.node,
+			icon=QIcon(conf.SESSIONLOG_PLUGIN_ICON)
+		)
+
+		tree.add_popup_menu_option(
+			'History (detached)', 
+			self.open_session_history_plugin_detached,
+			item=self.node,
+			icon=QIcon(conf.SESSIONLOG_PLUGIN_ICON)
+		)
 
 		return node
 
@@ -33,13 +44,19 @@ class SessionTreeNode(object):
 		super(SessionTreeNode, self).node_double_clicked_event()
 		self.open_session_history_plugin()
 
-	def open_session_history_plugin(self):
+	def open_session_history_plugin(self, detached=False):
 		if not hasattr(self, 'session_history_plugin'):
 			self.session_history_plugin = SessionHistory(self)
-			self.session_history_plugin.show()
-			self.session_history_plugin.subwindow.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
+			self.session_history_plugin.show(detached)
+			if hasattr(self.session_history_plugin, 'subwindow'):
+				self.session_history_plugin.subwindow.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
+			else:
+				self.session_history_plugin.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
 		else:
-			self.session_history_plugin.show()
+			self.session_history_plugin.show(detached)
+
+	def open_session_history_plugin_detached(self):
+		self.open_session_history_plugin(True)
 
 	def remove(self):
 		if hasattr(self, 'session_history_plugin'): self.mainwindow.mdi_area -= self.session_history_plugin
