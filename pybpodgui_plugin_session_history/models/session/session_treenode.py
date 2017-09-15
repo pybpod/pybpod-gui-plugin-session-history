@@ -24,16 +24,16 @@ class SessionTreeNode(object):
 		"""
 		node = super(SessionTreeNode, self).create_treenode(tree)
 
-		tree.add_popup_menu_option(
+		self.sessionhistory_action = tree.add_popup_menu_option(
 			'History', 
-			self.open_session_history_plugin,
+			self.open_sessionhistory_win,
 			item=self.node,
 			icon=QIcon(conf.SESSIONLOG_PLUGIN_ICON)
 		)
 
-		tree.add_popup_menu_option(
+		self.sessionhistory_detached_action = tree.add_popup_menu_option(
 			'History (detached)', 
-			self.open_session_history_plugin_detached,
+			self.open_sessionhistory_win_detached,
 			item=self.node,
 			icon=QIcon(conf.SESSIONLOG_PLUGIN_ICON)
 		)
@@ -42,27 +42,40 @@ class SessionTreeNode(object):
 
 	def node_double_clicked_event(self):
 		super(SessionTreeNode, self).node_double_clicked_event()
-		self.open_session_history_plugin()
+		self.open_sessionhistory_win()
 
-	def open_session_history_plugin(self):
-		if not hasattr(self, 'session_history_plugin'):
-			self.session_history_plugin = SessionHistory(self)
-			self.session_history_plugin.show()
-			self.session_history_plugin.subwindow.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
-		else:
-			self.session_history_plugin.show()
+	def open_sessionhistory_win(self):
+		#does not show the window if the detached window is visible
+		if hasattr(self, 'sessionhistory_win_detached') and self.sessionhistory_win_detached.visible: return 
 
-	def open_session_history_plugin_detached(self):
-		if not hasattr(self, 'session_history_plugin_detached'):
-			self.session_history_plugin_detached = SessionHistory(self)
-			self.session_history_plugin_detached.show(True)
-			self.session_history_plugin_detached.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
+		if not hasattr(self, 'sessionhistory_win'):
+			self.sessionhistory_win = SessionHistory(self)
+			self.sessionhistory_win.show()
+			self.sessionhistory_win.subwindow.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
 		else:
-			self.session_history_plugin_detached.show(True)
-	
+			self.sessionhistory_win.show()
+
+		self.sessionhistory_action.setEnabled(False)
+		self.sessionhistory_detached_action.setEnabled(False)
+
+	def open_sessionhistory_win_detached(self):
+		#does not show the window if the attached window is visible
+		if hasattr(self, 'sessionhistory_win') and self.sessionhistory_win.visible: return 
+
+		if not hasattr(self, 'sessionhistory_win_detached'):
+			self.sessionhistory_win_detached = SessionHistory(self)
+			self.sessionhistory_win_detached.show(True)
+			self.sessionhistory_win_detached.resize(*conf.SESSIONLOG_PLUGIN_WINDOW_SIZE)
+		else:
+			self.sessionhistory_win_detached.show(True)
+
+		self.sessionhistory_action.setEnabled(False)
+		self.sessionhistory_detached_action.setEnabled(False)
+
+
 
 	def remove(self):
-		if hasattr(self, 'session_history_plugin'): self.mainwindow.mdi_area -= self.session_history_plugin
+		if hasattr(self, 'sessionhistory_win'): self.mainwindow.mdi_area -= self.sessionhistory_win
 		super(SessionTreeNode, self).remove()
 
 	@property
@@ -72,4 +85,4 @@ class SessionTreeNode(object):
 	@name.setter
 	def name(self, value):
 		super(SessionTreeNode, self.__class__).name.fset(self, value)
-		if hasattr(self, 'session_history_plugin'): self.session_history_plugin.title = value
+		if hasattr(self, 'sessionhistory_win'): self.sessionhistory_win.title = value

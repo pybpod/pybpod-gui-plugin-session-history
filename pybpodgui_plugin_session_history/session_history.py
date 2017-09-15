@@ -53,6 +53,7 @@ class SessionHistory(BaseWidget):
 
 	def __init__(self, session):
 		BaseWidget.__init__(self, session.name)
+		
 		self.layout().setContentsMargins(5, 5, 5, 5)
 
 		self._log 		= ControlList()
@@ -102,6 +103,8 @@ class SessionHistory(BaseWidget):
 	def before_close_event(self):		
 		self._timer.stop()
 		self._stop = True
+		self.session.sessionhistory_action.setEnabled(True)
+		self.session.sessionhistory_detached_action.setEnabled(True)
 
 	def read_message_queue(self, update_gui=False):
 		""" Update board queue and retrieve most recent messages """
