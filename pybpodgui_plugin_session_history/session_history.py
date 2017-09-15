@@ -92,7 +92,8 @@ class SessionHistory(BaseWidget):
 			
 		self._stop  = False # flag used to close the gui in the middle of a loading
 		self.read_message_queue(True)
-		if not self._stop: self._timer.start(conf.SESSIONLOG_PLUGIN_REFRESH_RATE)
+		if not self._stop: 
+			self._timer.start(conf.SESSIONLOG_PLUGIN_REFRESH_RATE)
 
 	def hide(self):
 		self._timer.stop()
