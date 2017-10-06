@@ -21,8 +21,8 @@ from pysettings import conf
 
 from pyforms import BaseWidget
 from pyforms.Controls import ControlProgress
+from pyforms.Controls import ControlCheckBox
 from pyforms.Controls import ControlList
-
 
 #######################################################################
 ##### MESSAGES TYPES ##################################################
@@ -39,6 +39,7 @@ from pybpodapi.bpod.com.messaging.event_occurrence 		import EventOccurrence
 from pybpodapi.bpod.com.messaging.state_occurrence 		import StateOccurrence
 from pybpodapi.bpod.com.messaging.softcode_occurrence 	import SoftcodeOccurrence
 from pybpodapi.bpod.com.messaging.event_resume 			import EventResume
+from pybpodapi.bpod.com.messaging.session_info 			import SessionInfo
 #######################################################################
 #######################################################################
 
@@ -56,10 +57,14 @@ class SessionHistory(BaseWidget):
 		
 		self.layout().setContentsMargins(5, 5, 5, 5)
 
+		self._autoscroll_checkbox = ControlCheckBox('Auto-scroll', True)
+		self._autoscroll_checkbox.changed_event = self.__auto_scroll_evt
+
 		self._log 		= ControlList()
 		self._progress 	= ControlProgress('Loading', 0, 1, 100)
 
 		self._formset = [
+			(' ', '_autoscroll_checkbox'),
 			'_log',
 			'_progress'
 		]
@@ -69,6 +74,7 @@ class SessionHistory(BaseWidget):
 		self._log.readonly 				= True
 		self._log.horizontal_headers 	= ['#', 'Type', 'Name', 'Channel Id', 'Start', 'End', 'PC timestamp']
 		self._log.set_sorting_enabled(True)
+		self._log.autoscroll 			= True
 
 		self._colors = {}
 
@@ -77,6 +83,9 @@ class SessionHistory(BaseWidget):
 
 		self._timer = QTimer()
 		self._timer.timeout.connect(self.read_message_queue)
+
+	def __auto_scroll_evt(self):
+		self._log.autoscroll = self._autoscroll_checkbox.value
 
 	
 	def show(self, detached=False):
@@ -144,6 +153,16 @@ class SessionHistory(BaseWidget):
 						str(msg.pc_timestamp)
 					]
 
+				elif issubclass(type(msg), SessionInfo):
+					row = [
+						self._history_index, 
+						msg.MESSAGE_TYPE_ALIAS, 
+						"{0}={1}".format(msg.infoname,msg.infovalue) if msg.infovalue else msg.infoname,
+						'-',
+						'-',
+						'-', 
+						str(msg.pc_timestamp)
+					]
 				elif issubclass(type(msg), (EventOccurrence, EventResume)):
 					row = [
 						self._history_index, 
@@ -153,7 +172,7 @@ class SessionHistory(BaseWidget):
 						str(msg.host_timestamp) if msg.host_timestamp is not None else '-',
 						'-', 
 						str(msg.pc_timestamp)
-					]
+					]					
 				else:
 					row = [
 						self._history_index, 
