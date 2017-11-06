@@ -34,12 +34,12 @@ from pybranch.com.messaging.stdout 	import StdoutMessage
 from pybranch.com.messaging.warning import WarningMessage
 from pybranch.com.messaging.parser  import MessageParser
 
-from pybpodapi.bpod.com.messaging.trial					import Trial
-from pybpodapi.bpod.com.messaging.event_occurrence 		import EventOccurrence
-from pybpodapi.bpod.com.messaging.state_occurrence 		import StateOccurrence
-from pybpodapi.bpod.com.messaging.softcode_occurrence 	import SoftcodeOccurrence
-from pybpodapi.bpod.com.messaging.event_resume 			import EventResume
-from pybpodapi.bpod.com.messaging.session_info 			import SessionInfo
+from pybpodapi.com.messaging.trial					import Trial
+from pybpodapi.com.messaging.event_occurrence 		import EventOccurrence
+from pybpodapi.com.messaging.state_occurrence 		import StateOccurrence
+from pybpodapi.com.messaging.softcode_occurrence 	import SoftcodeOccurrence
+from pybpodapi.com.messaging.event_resume 			import EventResume
+from pybpodapi.com.messaging.session_info 			import SessionInfo
 #######################################################################
 #######################################################################
 
@@ -135,7 +135,7 @@ class SessionHistory(BaseWidget):
 					row = [
 						self._history_index, 
 						msg.MESSAGE_TYPE_ALIAS, 
-						msg.content + ' | ' + msg.traceback,
+						str(msg.content) + ' | ' + str(msg.traceback),
 						'-',
 						str(msg.host_timestamp) if msg.host_timestamp else '-',
 						'-', 
@@ -177,7 +177,7 @@ class SessionHistory(BaseWidget):
 					row = [
 						self._history_index, 
 						msg.MESSAGE_TYPE_ALIAS, 
-						msg.content,
+						str(msg.content),
 						'-',
 						str(msg.host_timestamp) if msg.host_timestamp else '-',
 						'-', 
