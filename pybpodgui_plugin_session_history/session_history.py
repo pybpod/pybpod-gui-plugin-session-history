@@ -20,9 +20,9 @@ else:
 from pysettings import conf
 
 from pyforms import BaseWidget
-from pyforms.Controls import ControlProgress
-from pyforms.Controls import ControlCheckBox
-from pyforms.Controls import ControlList
+from pyforms.controls import ControlProgress
+from pyforms.controls import ControlCheckBox
+from pyforms.controls import ControlList
 
 #######################################################################
 ##### MESSAGES TYPES ##################################################
