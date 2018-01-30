@@ -61,7 +61,7 @@ class SessionHistory(BaseWidget):
 		self._autoscroll_checkbox.changed_event = self.__auto_scroll_evt
 
 		self._log 		= ControlList()
-		self._progress 	= ControlProgress('Loading', 0, 1, 100)
+		self._progress 	= ControlProgress('Loading', default=0, min=1, max=100)
 
 		self._formset = [
 			(' ', '_autoscroll_checkbox'),
