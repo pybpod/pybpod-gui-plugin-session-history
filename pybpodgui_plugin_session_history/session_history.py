@@ -55,8 +55,9 @@ class SessionHistory(BaseWidget):
 	def __init__(self, session):
 		BaseWidget.__init__(self, session.name)
 		
-		self.layout().setContentsMargins(5, 5, 5, 5)
+		self.set_margin(5)
 
+		self._progress = ControlProgress('Progress', visible=False)
 		self._autoscroll_checkbox = ControlCheckBox('Auto-scroll', True)
 		self._autoscroll_checkbox.changed_event = self.__auto_scroll_evt
 
