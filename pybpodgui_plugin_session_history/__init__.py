@@ -3,7 +3,7 @@
 
 __version__ = "1.3.0beta"
 
-from pysettings import conf
+from pyforms import conf
 
 conf += 'pybpodgui_plugin_session_history.settings'
 conf += 'pybpodgui_plugin_session_history.resources'
@@ -12,6 +12,6 @@ conf += 'pybpodgui_plugin_session_history.resources'
 import loggingbootstrap
 
 # setup different loggers but output to single file
-loggingbootstrap.create_double_logger("pybpodgui_plugin_session_history", conf.BPODGUI_LOG_HANDLER_CONSOLE_LEVEL,
+loggingbootstrap.create_double_logger("pybpodgui_plugin_session_history", conf.APP_LOG_HANDLER_CONSOLE_LEVEL,
 									  conf.APP_LOG_FILENAME,
-									  conf.BPODGUI_LOG_HANDLER_FILE_LEVEL)
+									  conf.APP_LOG_HANDLER_FILE_LEVEL)

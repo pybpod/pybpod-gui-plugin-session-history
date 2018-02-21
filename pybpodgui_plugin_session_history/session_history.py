@@ -7,17 +7,12 @@
 
 import logging
 
-from pysettings import conf
+from pyforms import conf
 
-if conf.PYFORMS_USE_QT5:
-	from PyQt5.QtWidgets import QMessageBox
-	from PyQt5.QtGui import QColor
-	from PyQt5.QtCore import QTimer, QEventLoop
-else:
-	from PyQt4.QtGui import QMessageBox, QColor
-	from PyQt4.QtCore import QTimer, QEventLoop
+from AnyQt.QtGui import QColor
+from AnyQt.QtCore import QTimer, QEventLoop
 
-from pysettings import conf
+from pyforms import conf
 
 from pyforms import BaseWidget
 from pyforms.controls import ControlProgress
@@ -214,8 +209,7 @@ class SessionHistory(BaseWidget):
 			if hasattr(self, '_timer'):
 				self._timer.stop()
 			logger.error(str(err), exc_info=True)
-			QMessageBox.critical(self, "Error",
-								 "Unexpected error while loading session history. Pleas see log for more details.")
+			self.alert("Unexpected error while loading session history. Pleas see log for more details.", "Error")
 
 		if update_gui:
 			self._progress.hide()
