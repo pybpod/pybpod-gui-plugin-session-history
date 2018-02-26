@@ -1,7 +1,7 @@
 # !/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-__version__ = "1.3.0beta"
+__version__ = "1.4.0"
 
 from pyforms import conf
 
