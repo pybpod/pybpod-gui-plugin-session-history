@@ -56,8 +56,7 @@ class SessionHistory(BaseWidget):
         self.set_margin(5)
 
         self._progress    = ControlProgress('Progress', visible=False)
-        self._lastentries = ControlCheckBox('Show only the last entries', default=True, changed_event=self.__lastentries_changed_evt)
-        self._range       = ControlBoundingSlider('Entries to load', 0, 0, 100)
+        self._reload      = ControlButton('Reload everything', default=self.__reload_evt)
         self._autoscroll  = ControlCheckBox('Auto-scroll', default=True,  changed_event=self.__auto_scroll_evt)
         self._log         = ControlList(
             readonly=True, autoscroll=True, resizecolumns=False,
@@ -65,16 +64,12 @@ class SessionHistory(BaseWidget):
         )
 
         self._formset = [
-            ('_lastentries', '_autoscroll'),
-            '_range',
+            ('_autoscroll',' ',' ','_reload',),
             '_log',
             '_progress'
         ]
 
         self.session        = session
-        self._history_index = (len(session.messages_history)-200) if len(session.messages_history)>200 else 0
-        self._range.max     = len(session.messages_history)
-        self._range.value   = [self._history_index, len(session.messages_history)]
         self._colors        = {}
 
         self._progress.hide()
@@ -82,27 +77,20 @@ class SessionHistory(BaseWidget):
         self._timer = QTimer()
         self._timer.timeout.connect(self.read_message_queue)
 
-
-    def __lastentries_changed_evt(self):
-        QApplication.processEvents()
-
+    def __reload_evt(self):
+        self._history_index = 0
         self._log.clear()
-        self._stop = False
-            
-        if self._lastentries.value:
-            self._history_index = len(self.session.messages_history)-200
-        else:
-            self._history_index = 0
-
+        self._stop = False # flag used to close the gui in the middle of a loading
         self.read_message_queue(True)
-
-
 
     def __auto_scroll_evt(self):
         self._log.autoscroll = self._autoscroll.value
 
     
     def show(self, detached=False):
+        if self.session.is_running and self.session.setup.detached:
+            return
+
         # Prevent the call to be recursive because of the mdi_area
         if not detached:
             if hasattr(self, '_show_called'):
@@ -113,10 +101,18 @@ class SessionHistory(BaseWidget):
             del self._show_called
         else:
             BaseWidget.show(self)
-            
+
+        #in case the session is still running load the latest 200 messages
+        if self.session.is_running:
+            self._history_index = len(self.session.messages_history)-200 if len(self.session.messages_history)>200 else 0
+            self._reload.enabled = False
+        else:
+            self._history_index  = 0
+            self._reload.enabled = True
+
         self._stop = False # flag used to close the gui in the middle of a loading
         self.read_message_queue(True)
-        if not self._stop and self.session.status==self.session.STATUS_SESSION_RUNNING: 
+        if not self._stop and self.session.is_running:
             self._timer.start(conf.SESSIONLOG_PLUGIN_REFRESH_RATE)
 
     def hide(self):
@@ -131,6 +127,10 @@ class SessionHistory(BaseWidget):
 
     def read_message_queue(self, update_gui=False):
         """ Update board queue and retrieve most recent messages """
+
+        # check if the session is running. If not stops the timer
+        if not self.session.is_running: self._timer.stop()
+
         messages_history = self.session.messages_history
         recent_history   = messages_history[self._history_index:]
 
@@ -219,8 +219,6 @@ class SessionHistory(BaseWidget):
                 QApplication.processEvents()
                 self._history_index += 1
 
-            self._range.max   = self._history_index
-            self._range.value = [self._range.value[0], self._history_index]
             self._log.form.setUpdatesEnabled(True)
 
         
@@ -233,6 +231,9 @@ class SessionHistory(BaseWidget):
 
         if update_gui:
             self._progress.hide()
+
+        if not self.session.is_running:
+            self._reload.enabled = True
 
     @property
     def mainwindow(self):
