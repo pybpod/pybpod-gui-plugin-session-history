@@ -45,6 +45,8 @@ class SessionTreeNode(object):
         self.open_sessionhistory_win()
 
     def open_sessionhistory_win(self):
+        self.load_contents()
+
         #does not show the window if the detached window is visible
         if hasattr(self, 'sessionhistory_win_detached') and self.sessionhistory_win_detached.visible: return 
 
@@ -59,6 +61,8 @@ class SessionTreeNode(object):
         self.sessionhistory_detached_action.setEnabled(False)
 
     def open_sessionhistory_win_detached(self):
+        self.load_contents()
+        
         #does not show the window if the attached window is visible
         if hasattr(self, 'sessionhistory_win') and self.sessionhistory_win.visible: return 
 
