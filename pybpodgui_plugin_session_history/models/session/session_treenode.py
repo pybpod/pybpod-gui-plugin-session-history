@@ -39,12 +39,13 @@ class SessionTreeNode(object):
     def node_double_clicked_event(self):
         super(SessionTreeNode, self).node_double_clicked_event()
 
-        if self.is_running and self.setup.detached:
-            return
-
+        
         self.open_sessionhistory_win()
 
     def open_sessionhistory_win(self):
+        if self.is_running and self.setup.detached:
+            return
+
         self.load_contents()
 
         #does not show the window if the detached window is visible
@@ -61,6 +62,9 @@ class SessionTreeNode(object):
         self.sessionhistory_detached_action.setEnabled(False)
 
     def open_sessionhistory_win_detached(self):
+        if self.is_running and self.setup.detached:
+            return
+
         self.load_contents()
         
         #does not show the window if the attached window is visible
