@@ -9,8 +9,8 @@ import logging
 
 from pyforms import conf
 
-from AnyQt.QtGui import QColor
-from AnyQt.QtCore import QTimer, QEventLoop
+from AnyQt.QtGui import QColor, QBrush
+from AnyQt.QtCore import QTimer, QEventLoop, QAbstractTableModel, Qt, QSize, QVariant, pyqtSignal
 
 from pyforms import conf
 
@@ -18,7 +18,7 @@ from pyforms import BaseWidget
 from pyforms.controls import ControlProgress
 from pyforms.controls import ControlButton
 from pyforms.controls import ControlCheckBox
-from pyforms.controls import ControlList
+from pyforms.controls import ControlTableView
 from pyforms.controls import ControlBoundingSlider
 from AnyQt.QtWidgets import QApplication
 
@@ -40,11 +40,79 @@ from pybpodapi.com.messaging.event_resume           import EventResume
 from pybpodapi.com.messaging.session_info           import SessionInfo
 #######################################################################
 #######################################################################
-
-
-
-
 logger = logging.getLogger(__name__)
+
+
+class PandasModel(QAbstractTableModel):
+    """
+    Class to populate a table view with a pandas dataframe
+    """
+    COLOR_MSG                = QBrush( QColor(200,200,200) )
+    COLOR_DEBUG              = QBrush( QColor(200,200,200) )
+    COLOR_TRIAL              = QBrush( QColor(0,100,200) )
+    COLOR_ERROR              = QBrush( QColor(240,0,0) )
+    COLOR_INFO               = QBrush( QColor(150,150,255) )
+    COLOR_SOFTCODE_OCCURENCE = QBrush( QColor(40,30,30) )
+    COLOR_STATE_OCCURENCE    = QBrush( QColor(0,100,0) )
+    COLOR_STDERR             = QBrush( QColor(255,0,0) )
+    COLOR_STDOUT             = QBrush( QColor(150,150,150) )
+    COLOR_TRIAL              = QBrush( QColor(0,0,255) )
+    COLOR_WARNING            = QBrush( QColor(255,100,0) )
+    
+    COLUMNS_WIDTHS = [QSize(100,30), QSize(400,30), QSize(200,30), QSize(200,30), QSize(200,30), QSize(200,30)]
+
+    def __init__(self, data, parent=None):
+        QAbstractTableModel.__init__(self, parent)
+        self._data = data
+
+    def rowCount(self, parent=None):
+        return len(self._data.values)
+
+    def columnCount(self, parent=None):
+        return self._data.columns.size
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid():
+            if role == Qt.ForegroundRole:
+                dtype = self._data.values[index.row()][0]
+
+                if dtype=='debug':
+                    return self.COLOR_DEBUG
+                elif dtype=='END-TRIAL':
+                    return self.COLOR_TRIAL
+                elif dtype=='error':
+                    return self.COLOR_ERROR
+                elif dtype=='INFO':
+                    return self.COLOR_INFO
+                elif dtype=='SOFTCODE':
+                    return self.COLOR_SOFTCODE_OCCURENCE
+                elif dtype=='STATE':
+                    return self.COLOR_STATE_OCCURENCE
+                elif dtype=='stderr':
+                    return self.COLOR_STDERR
+                elif dtype=='stdout':
+                    return self.COLOR_STDOUT
+                elif dtype=='TRIAL':
+                    return self.COLOR_TRIAL
+                elif dtype=='warning':
+                    return self.COLOR_WARNING
+                else:
+                    return self.COLOR_MSG
+
+            elif role == Qt.DisplayRole:
+                return str(self._data.values[index.row()][index.column()])
+
+            
+        return None
+
+    def headerData(self, col, orientation, role):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self._data.columns[col]
+        #elif orientation == Qt.Horizontal and role == Qt.SizeHintRole:
+        #    return QVariant(self.COLUMNS_WIDTHS[col])
+
+    def flags(self, index):
+        return Qt.ItemIsEnabled
 
 
 class SessionHistory(BaseWidget):
@@ -58,10 +126,7 @@ class SessionHistory(BaseWidget):
         self._progress    = ControlProgress('Progress', visible=False)
         self._reload      = ControlButton('Reload everything', default=self.__reload_evt)
         self._autoscroll  = ControlCheckBox('Auto-scroll', default=True,  changed_event=self.__auto_scroll_evt)
-        self._log         = ControlList(
-            readonly=True, autoscroll=True, resizecolumns=False,
-            horizontal_headers = ['#', 'Type', 'Name', 'Channel Id', 'Start', 'End', 'PC timestamp']
-        )
+        self._log         = ControlTableView(select_entire_row=True)
 
         self._formset = [
             ('_autoscroll',' ',' ','_reload',),
@@ -69,23 +134,31 @@ class SessionHistory(BaseWidget):
             '_progress'
         ]
 
-        self.session        = session
-        self._colors        = {}
+        self.session = session
+        self._colors = {}
 
         self._progress.hide()
 
         self._timer = QTimer()
-        self._timer.timeout.connect(self.read_message_queue)
+
+        self._log.value = self.model = PandasModel(session.data)
+        self._timer.timeout.connect(self.__update_table_view)
+
+    def __update_table_view(self):
+        self._log.value = None
+        self._log.value = self.model
+        if self._autoscroll.value:
+            self._log.scrollToBottom()
 
     def __reload_evt(self):
         self._history_index = 0
-        self._log.clear()
+        #self._log.clear()
         self._stop = False # flag used to close the gui in the middle of a loading
         self.read_message_queue(True)
 
     def __auto_scroll_evt(self):
-        self._log.autoscroll = self._autoscroll.value
-
+        #self._log.autoscroll = self._autoscroll.value
+        pass
     
     def show(self, detached=False):
         if self.session.is_running and self.session.setup.detached:
