@@ -13,33 +13,12 @@ from AnyQt.QtGui import QColor, QBrush
 from AnyQt.QtCore import QTimer, QEventLoop, QAbstractTableModel, Qt, QSize, QVariant, pyqtSignal
 
 from pyforms import conf
-
 from pyforms import BaseWidget
-from pyforms.controls import ControlProgress
-from pyforms.controls import ControlButton
 from pyforms.controls import ControlCheckBox
 from pyforms.controls import ControlTableView
-from pyforms.controls import ControlBoundingSlider
-from AnyQt.QtWidgets import QApplication
 
-#######################################################################
-##### MESSAGES TYPES ##################################################
-#######################################################################
-from pybranch.com.messaging.error   import ErrorMessage
-from pybranch.com.messaging.debug   import DebugMessage
-from pybranch.com.messaging.stderr  import StderrMessage
-from pybranch.com.messaging.stdout  import StdoutMessage
-from pybranch.com.messaging.parser  import MessageParser
-from pybpodapi.com.messaging.warning import WarningMessage
+from pybpodapi.session import Session
 
-from pybpodapi.com.messaging.trial                  import Trial
-from pybpodapi.com.messaging.event_occurrence       import EventOccurrence
-from pybpodapi.com.messaging.state_occurrence       import StateOccurrence
-from pybpodapi.com.messaging.softcode_occurrence    import SoftcodeOccurrence
-from pybpodapi.com.messaging.event_resume           import EventResume
-from pybpodapi.com.messaging.session_info           import SessionInfo
-#######################################################################
-#######################################################################
 logger = logging.getLogger(__name__)
 
 
@@ -76,28 +55,17 @@ class PandasModel(QAbstractTableModel):
             if role == Qt.ForegroundRole:
                 dtype = self._data.values[index.row()][0]
 
-                if dtype=='debug':
-                    return self.COLOR_DEBUG
-                elif dtype=='END-TRIAL':
-                    return self.COLOR_TRIAL
-                elif dtype=='error':
-                    return self.COLOR_ERROR
-                elif dtype=='INFO':
-                    return self.COLOR_INFO
-                elif dtype=='SOFTCODE':
-                    return self.COLOR_SOFTCODE_OCCURENCE
-                elif dtype=='STATE':
-                    return self.COLOR_STATE_OCCURENCE
-                elif dtype=='stderr':
-                    return self.COLOR_STDERR
-                elif dtype=='stdout':
-                    return self.COLOR_STDOUT
-                elif dtype=='TRIAL':
-                    return self.COLOR_TRIAL
-                elif dtype=='warning':
-                    return self.COLOR_WARNING
-                else:
-                    return self.COLOR_MSG
+                if   dtype==Session.MSGTYPE_DEBUG:      return self.COLOR_DEBUG
+                elif dtype==Session.MSGTYPE_ENDTRIAL:   return self.COLOR_TRIAL
+                elif dtype==Session.MSGTYPE_ERROR:      return self.COLOR_ERROR
+                elif dtype==Session.MSGTYPE_INFO:       return self.COLOR_INFO
+                elif dtype==Session.MSGTYPE_SOFTCODE:   return self.COLOR_SOFTCODE_OCCURENCE
+                elif dtype==Session.MSGTYPE_STATE:      return self.COLOR_STATE_OCCURENCE
+                elif dtype==Session.MSGTYPE_STDERR:     return self.COLOR_STDERR
+                elif dtype==Session.MSGTYPE_STDOUT:     return self.COLOR_STDOUT
+                elif dtype==Session.MSGTYPE_TRIAL:      return self.COLOR_TRIAL
+                elif dtype==Session.MSGTYPE_WARNING:    return self.COLOR_WARNING
+                else:                                   return self.COLOR_MSG
 
             elif role == Qt.DisplayRole:
                 return str(self._data.values[index.row()][index.column()])
