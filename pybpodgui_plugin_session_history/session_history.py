@@ -45,10 +45,10 @@ class PandasModel(QAbstractTableModel):
         self._data = data
 
     def rowCount(self, parent=None):
-        return len(self._data.values)
+        return len(self._data.values) if self._data is not None else 0
 
     def columnCount(self, parent=None):
-        return self._data.columns.size
+        return self._data.columns.size if self._data is not None else 0
 
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
