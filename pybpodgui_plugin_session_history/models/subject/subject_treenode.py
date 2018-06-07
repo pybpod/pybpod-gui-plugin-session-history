@@ -15,7 +15,6 @@ class SubjectTreeNode(object):
         :param session: 
         :return: 
         """
-        print('session history creating subjet treenode')
         node = super(SubjectTreeNode, self).create_sessiontreenode(session)
 
         self.sessionhistory_action = self.tree.add_popup_menu_option(
