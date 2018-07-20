@@ -32,7 +32,8 @@ class PandasModel(QAbstractTableModel):
     COLOR_ERROR              = QBrush( QColor(240,0,0) )
     COLOR_INFO               = QBrush( QColor(150,150,255) )
     COLOR_SOFTCODE_OCCURENCE = QBrush( QColor(40,30,30) )
-    COLOR_STATE_OCCURENCE    = QBrush( QColor(0,100,0) )
+    COLOR_STATE_OCCURENCE    = QBrush( QColor(70,180,70) )
+    COLOR_STATE_TRANSITION   = QBrush( QColor(0,100,0) )
     COLOR_STDERR             = QBrush( QColor(255,0,0) )
     COLOR_STDOUT             = QBrush( QColor(150,150,150) )
     COLOR_TRIAL              = QBrush( QColor(0,0,255) )
@@ -61,6 +62,7 @@ class PandasModel(QAbstractTableModel):
                 elif dtype==Session.MSGTYPE_INFO:       return self.COLOR_INFO
                 elif dtype==Session.MSGTYPE_SOFTCODE:   return self.COLOR_SOFTCODE_OCCURENCE
                 elif dtype==Session.MSGTYPE_STATE:      return self.COLOR_STATE_OCCURENCE
+                elif dtype==Session.MSGTYPE_TRANSITION: return self.COLOR_STATE_TRANSITION
                 elif dtype==Session.MSGTYPE_STDERR:     return self.COLOR_STDERR
                 elif dtype==Session.MSGTYPE_STDOUT:     return self.COLOR_STDOUT
                 elif dtype==Session.MSGTYPE_TRIAL:      return self.COLOR_TRIAL
