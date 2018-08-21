@@ -3,7 +3,7 @@
 
 __version__ = "1.4.0"
 
-from pyforms import conf
+from confapp import conf
 
 conf += 'pybpodgui_plugin_session_history.settings'
 conf += 'pybpodgui_plugin_session_history.resources'

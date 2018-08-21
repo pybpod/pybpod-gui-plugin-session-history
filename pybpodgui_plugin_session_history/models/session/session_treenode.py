@@ -3,7 +3,7 @@
 
 import logging
 
-from pyforms import conf
+from confapp import conf
 
 from AnyQt.QtGui import QIcon
 from pybpodgui_plugin_session_history.session_history import SessionHistory
