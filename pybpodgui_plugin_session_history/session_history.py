@@ -13,7 +13,7 @@ from AnyQt.QtGui import QColor, QBrush
 from AnyQt.QtCore import QTimer, QEventLoop, QAbstractTableModel, Qt, QSize, QVariant, pyqtSignal
 
 from confapp import conf
-from pyforms import BaseWidget
+from pyforms.basewidget import BaseWidget
 from pyforms.controls import ControlCheckBox
 from pyforms.controls import ControlTableView
 
