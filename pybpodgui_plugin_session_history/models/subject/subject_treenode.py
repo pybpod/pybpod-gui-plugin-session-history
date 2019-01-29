@@ -38,9 +38,9 @@ class SubjectTreeNode(object):
 
         self.open_sessionhistory_win()
 
-    def remove(self):
+    def remove(self, silent=False):
         if hasattr(self, 'sessionhistory_win'): self.mainwindow.mdi_area -= self.sessionhistory_win
-        super(SubjectTreeNode, self).remove()
+        super(SubjectTreeNode, self).remove(silent)
 
     @property
     def name(self):
