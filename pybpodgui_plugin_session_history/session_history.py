@@ -6,18 +6,18 @@
 """
 
 import logging
+
 import numpy as np
+from AnyQt.QtCore import (QAbstractTableModel, QSize, Qt, QTimer,
+                          pyqtSignal)
+from AnyQt.QtGui import QBrush, QColor
+from PyQt5.QtWidgets import QHeaderView
 from confapp import conf
-
-from AnyQt.QtGui import QColor, QBrush
-from AnyQt.QtCore import QTimer, QEventLoop, QAbstractTableModel, Qt, QSize, QVariant, pyqtSignal
-
-from confapp import conf
-from pyforms.basewidget import BaseWidget
-from pyforms.controls import ControlCheckBox
-from pyforms.controls import ControlTableView
+from PyQt5.uic.Compiler.qtproxies import QtWidgets
 
 from pybpodapi.session import Session
+from pyforms.basewidget import BaseWidget
+from pyforms.controls import ControlCheckBox, ControlTableView
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +101,10 @@ class SessionHistory(BaseWidget):
             '_log'
         ]
 
+        self._counter = 0
         self.session    = session
-        self._log.value = self.model = PandasModel(session.data)
+        self.model = PandasModel(session.data)
+        self._log.value = self.model
         
         self._timer = QTimer()
         self._timer.timeout.connect(self.__update_table_view)
